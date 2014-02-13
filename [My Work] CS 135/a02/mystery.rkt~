@@ -1,0 +1,35 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |mystery prototype|) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+(define (mys a b c)
+  (cond 
+    [a b]
+    [else c]))
+
+(define (myst a b c)
+  (or (and a b)
+      (and (not a) c)))
+
+(check-expect (mys true true true) true)
+(check-expect (mys true false true) false)
+(check-expect (mys true false 149) false)
+(check-expect (mys true false false) false)
+(check-expect (mys true true false) true)
+(check-expect (mys false true true) true)
+(check-expect (mys false false true) true)
+(check-expect (mys false true false) false)
+(check-expect (mys false false false) false)
+(check-expect (mys false 129 true) true)
+(check-expect (mys false 120 false) false)
+
+(check-expect (myst true true true) true)
+(check-expect (myst true false true) false)
+(check-expect (myst true false 149) false)
+(check-expect (myst true false false) false)
+(check-expect (myst true true false) true)
+(check-expect (myst false true true) true)
+(check-expect (myst false false true) true)
+(check-expect (myst false true false) false)
+(check-expect (myst false false false) false)
+(check-expect (myst false 129 true) true)
+(check-expect (myst false 120 false) false)

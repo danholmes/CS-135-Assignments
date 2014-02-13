@@ -1,0 +1,184 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname grades2) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; ******************************************
+;; CS 135 Assignment 2, Question 3
+;; Daniel Holmes, 20418854
+;; ******************************************
+
+;; TQA = Total Questions Asked
+;; NCQ = Number Correct Questions
+;; NIQ = Number Incorrect Questions
+(define %TOPANS 0.75)
+(define Question-Value 2)
+(define Value-Corr-Ans 2)
+(define Value-Incorr-Ans 1)
+(define Value-Unans-Ques 0)
+
+;; MAKE HELPER FUNCTIONS TO REDUCE COMPLEXITY~~~!!!!!!
+
+(define (participation-mark TQA NCA NIA)
+  (cond [(>= NCA (* TQA %TOPANS))  ; (NCA >= MCQ)
+         (* (/ Value-Corr-Ans Question-Value)
+             100)]
+        
+        [{and (< NCA (* TQA %TOPANS)) ;(NCA < MCQ), (NCA+NIA >= MCQ)
+              (>= (+ NCA NIA) (* TQA %TOPANS))}
+         {* (/ (+ (* NCA Value-Corr-Ans) 
+               (*(- (* TQA %TOPANS) NCA ) Value-Incorr-Ans))
+            (* TQA %TOPANS Question-Value))
+            100}]
+        
+        [{and (< NCA (* TQA %TOPANS)) ;(NCA < MCQ), (NCA+NIA < MCQ)
+              (< (+ NCA NIA) (* TQA %TOPANS))}
+         {* (/ (+ (* NCA Value-Corr-Ans) 
+                  (* NIA  Value-Incorr-Ans)
+                  (* (- (* TQA %TOPANS) (+ NCA NIA) ) Value-Unans-Ques))
+               (* TQA %TOPANS Question-Value))
+            100}]))
+
+;; CorrectAns
+(check-expect (participation-mark 100 100 0) 100) ;; NCA > MCQ
+(check-expect (participation-mark 100 75 0) 100) ;; NCA = MCQ
+(check-expect (participation-mark 100 50 0) [* 100 (/ 100 150)]) ;; NCA < MCQ
+
+;; CorrectAns + IncorrectAns
+(check-expect (participation-mark 100 50 50) [* 100 (/ 125 150)]) ;; (NCA < MCQ), (NCA+NIA > MCQ)
+(check-expect (participation-mark 100 50 25) [* 100 (/ 125 150)]) ;; (NCA < MCQ), (NCA+NIA = MCQ)
+(check-expect (participation-mark 100 25 25) [* 100 (/ 75 150)]) ;; (NCA < MCQ), (NCA+NIA < MCQ)
+
+;; IncorrectAns
+(check-expect (participation-mark 100 0 100) [* 100 (/ 75 150)]) ;; (NCA = 0), (NIA > MCQ)
+(check-expect (participation-mark 100 0 75) [* 100 (/ 75 150)]) ;; (NCA = 0), (NIA = MCQ)
+(check-expect (participation-mark 100 0 50) [* 100 (/ 50 150)]) ;; (NCA = 0), (NIA < MCQ)
+
+;; Unans
+(check-expect (participation-mark 100 0 0 ) 0) ;; All unans
+
+
+;; ***** GRADE CALCULATOR
+
+(define final-exam-weight 0.45)
+(define first-midterm-weight 0.10)
+(define second-midterm-weight 0.20)
+(define overall-assignments-weight 0.20)
+(define participation-weight 0.05)
+(define minimum-assignment-grade 50)
+(define minimum-exam-grade 50)
+(define maximum-failing-grade 46)
+
+
+(define (final-cs135-grade final-exam-grade 
+                           first-midterm-grade
+                           second-midterm-grade
+                           overall-assignments-grade
+                           participation-grade)
+  (cond [ ; if assignments or exams mark do not meet minimum, theyve failed, calculate failing mark
+         (or (< overall-assignments-grade minimum-assignment-grade)
+            (< (calculate-weighted-exam-grade final-exam-grade 
+                                              first-midterm-grade 
+                                              second-midterm-grade) 
+               minimum-weighted-exam-grade))
+        (cond [(> (calculate-grade final-exam-grade 
+                                   first-midterm-grade
+                                   second-midterm-grade
+                                   overall-assignments-grade
+                                   participation-grade)
+                  maximum-failing-grade)
+               maximum-failing-grade]
+              
+              [else (calculate-grade final-exam-grade 
+                                     first-midterm-grade
+                                     second-midterm-grade
+                                     overall-assignments-grade
+                                     participation-grade)])]
+        [ ; otherwise, their grades DO meet minimums, so calculate passing mark
+         else (calculate-grade final-exam-grade 
+                                     first-midterm-grade
+                                     second-midterm-grade
+                                     overall-assignments-grade
+                                     participation-grade)])
+  
+;; HELPER FUCNCTION: Calculates their weighted exam grade from three exams
+(define (calculate-weighted-exam-grade final-exam-grade 
+                           first-midterm-grade
+                           second-midterm-grade)
+  (/ (+ final-exam-grade first-midterm-grade second-midterm-grade) 3)
+
+ ;; HELPER FUNCTION: Calculates their final grade
+(define (calculate-grade final-exam-grade 
+                           first-midterm-grade
+                           second-midterm-grade
+                           overall-assignments-grade
+                           participation-grade)
+  (+ (* final-exam-grade final-exam-weight)
+     (* first-midterm-grade first-midterm-weight)
+     (* second-midterm-grade second-midterm-weight)
+     (* overall-assignments-grade overall-assignments-weight)
+     (* participation-grade participation-weight)))
+
+;; ****** GRADE NEEDED CALCULATOR
+
+ 
+  
+  
+(define desired-grade 60)
+(define min-weighted-exam-mark 50)
+(define min-possible-mark 0)
+(define max-possible-mark 100)
+
+
+  
+(define (final-cs135-exam-grade-needed first-midterm-grade
+                                       second-midterm-grade
+                                       overall-assignments-grade
+                                       participation-grade)
+  (cond [ ; check if their assignments grade meets minimum required, if it doesnt return "impossible"
+         (< overall-assignments-grade minimum-assignment-grade)
+         'impossible]
+        [ ; check if getting a perfect mark on the exam will allow them to meet minimum exam requirement
+          ; and their desired-grade, if it doesn't then return "impossible"
+         (not (>= (calculate-weighted-exam-grade max-possible-mark
+                                            first-midterm-grade
+                                            second-midterm-grade
+                                            overall-assignments-grade
+                                            participation-grade)
+             desired-grade
+             min-weighted-exam-mark))
+         'impossible]
+        [ ; SINCE their assignments mark meets minimum required, AND SINCE the mark required for them to
+          ; achieve both the minimum-weighted-exam requirement and their desired-final-mark, THEN
+          ; calculate the exam mark they must at least achieve to receive at least the desired mark
+         (* (/ (- desired-grade
+                  (* first-midterm-grade first-midterm-weight)
+                  (* second-midterm-grade second-midterm-weight)
+                  (* overall-assignments-grade overall-assignments-weight)
+                  (* 100 participation-weight))
+                final-exam-weight) 
+            100)
+        
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

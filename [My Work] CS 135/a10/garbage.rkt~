@@ -1,0 +1,37 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname garbage) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+(define teststate (make-state
+                   (list
+                    (list 4 '? '? '?)
+                    (list '? '? '? '?)
+                    (list '? '? '? '?)
+                    (list '? '? '? '?))
+                   (list 1 3 2 2)
+                   (list 3 2 2 1)
+                   (list 1 3 2 3)
+                   (list 2 2 3 1)))
+
+(define cur-row (first (state-grid teststate)))
+
+(define f-cur-row 
+  (filter (lambda (x)
+            (not (equal? x '?)))
+          cur-row))
+
+(define fs-cur-row
+  (quicksort f-cur-row <=))
+
+(define dup-pres
+  (cond [(empty? (rest fs-cur-row))
+         false]
+        [else
+         (ormap (lambda(x) x)
+                (map = 
+                     fs-cur-row 
+                     (append (rest fs-cur-row) 
+                             (list (first fs-cur-row)))))]))
+cur-row
+f-cur-row
+fs-cur-row
+dup-pres

@@ -1,0 +1,70 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname symbol-list) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+;; *******************************************************************
+;; Assignment 4, Question 3
+;; (symbol list functions)
+;; Daniel Holmes, 20418854
+;; *******************************************************************
+
+;; 3. a.)
+
+;; next-city: (listof Symbol) Symbol -> Symbol
+
+(check-expect (next-city (cons 'waterloo (cons 'toronto (cons 'cambridge empty))) 'guelph)
+              'not-in-route)
+(check-expect (next-city (cons 'waterloo (cons 'toronto (cons 'cambridge empty))) 'cambridge)
+              'none)
+(check-expect (next-city (cons 'waterloo (cons 'toronto (cons 'cambridge empty))) 'toronto)
+              'cambridge)
+(check-expect (next-city empty 'cambridge) 'not-in-route)
+
+(define (next-city list-of-cities current-city)
+  (cond [(empty? list-of-cities)
+         'not-in-route]
+        [(and (symbol=? current-city (first list-of-cities))
+         (empty? (rest list-of-cities)))
+         'none]
+        [(symbol=? current-city (first list-of-cities))
+         (first (rest list-of-cities))]
+        [else (next-city (rest list-of-cities) current-city)]))
+        
+;; 3. b.)
+
+(check-expect (count-cities-before (cons 'waterloo (cons 'toronto (cons 'cambridge (cons 'guelph empty))))
+                                   'cambridge)
+              2)
+(define (count-cities-before list-of-cities target-city)
+  (cond [(or (empty? list-of-cities)
+             (symbol=? target-city (first list-of-cities)))
+         0]
+        [else (+ 1 (count-cities-before (rest list-of-cities) target-city))]))
+
+;; 3. c.)
+(check-expect (last-city empty) 
+              'empty-route)
+(check-expect (last-city (cons 'waterloo (cons 'toronto (cons 'cambridge empty)))) 
+              'cambridge)
+
+(define (last-city list-of-cities)
+  (cond [(empty? list-of-cities)
+         'empty-route]
+        [(empty? (rest list-of-cities))
+         (first list-of-cities)]
+        [else (last-city (rest list-of-cities))]))
+
+;; 3. d.)
+(check-expect (update-route empty 'guelph)
+              (cons 'guelph empty))
+(check-expect (update-route (cons 'waterloo (cons 'toronto (cons 'cambridge empty))) 'guelph)
+             (cons 'waterloo (cons 'toronto (cons 'cambridge (cons 'guelph empty)))))
+(check-expect (update-route (cons 'waterloo (cons 'toronto (cons 'cambridge empty))) 'cambridge)
+             (cons 'waterloo (cons 'toronto (cons 'cambridge empty))))
+             
+(define (update-route list-of-cities city-to-add)
+  (cond [(empty? list-of-cities)
+         (cons city-to-add empty)]
+        [(symbol=? city-to-add (first list-of-cities))
+         list-of-cities]
+        [else (cons (first list-of-cities)
+                    (update-route (rest list-of-cities) city-to-add))]))

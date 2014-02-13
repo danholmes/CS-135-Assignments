@@ -1,0 +1,29 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname rpsls) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ())))
+
+(define (who-wins? p1-action p2-action)
+  (cond [(equal? p1-action 'rock)
+         (cond [(equal? p2-action 'scissors) 'player1]
+               [(equal? p2-action 'lizard) 'player1]
+               [else 'player2])]
+         [(equal? p1-action 'paper)
+         (cond [(equal? p2-action 'rock) 'player1]
+               [(equal? p2-action 'spock) 'player1]
+               [else 'player2])]
+         [(equal? p1-action 'scissors)
+         (cond [(equal? p2-action 'paper) 'player1]
+               [(equal? p2-action 'lizard) 'player1]
+               [else 'player2])]
+         [(equal? p1-action 'lizard)
+         (cond [(equal? p2-action 'spock) 'player1]
+               [(equal? p2-action 'paper) 'player1]
+               [else 'player2])]
+         [(equal? p1-action 'spock)
+         (cond [(equal? p2-action 'rock) 'player1]
+               [(equal? p2-action 'scissors) 'player1]
+               [else 'player2])]))
+   
+(define (rpsls p1-action p2-action)
+  (cond [(equal? p1-action p2-action) 'tie]
+        [else (who-wins? p1-action p2-action)]))

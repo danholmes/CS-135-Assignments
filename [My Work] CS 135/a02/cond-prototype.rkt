@@ -1,0 +1,27 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname cond-prototype) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f ())))
+(define (p1? x) (= x 1))
+(define (p2? x) (= x 2))
+(define (p3? x) (= x 3))
+
+(define (f1 x) 'f1)
+(define (f2 x) 'f2)
+(define (f3 x) 'f3)
+
+
+(define (q1a x)
+  (cond [(not (p1? x))
+         (cond [(p2? x) (f1 x)]
+               [(p3? x) (f2 x)]
+               [(not (p3? x)) (f2 x)])]
+        [else
+         (cond [(p3? x) (f2 x)]
+               [else x])]))
+
+(check-expect (q1a 1) 1)
+(check-expect (q1a 2) 'f1)
+(check-expect (q1a 3) 'f2)
+(check-expect (q1a 4) 'f2)
+              
+                
